@@ -26,21 +26,23 @@ public class createUserForm extends javax.swing.JFrame {
     public createUserForm() {
         initComponents();
     }
+    public static String email, usrname;
+    
     public boolean duplicatedChecker() {
     dbConnectors dbc = new dbConnectors();
     try {
-        String query = "SELECT u_email, u_username FROM tbl_users WHERE u_username = '" + uname.getText() + "' OR u_email = '" + email.getText() + "'";
+        String query = "SELECT u_email, u_username FROM tbl_users WHERE u_username = '" + uname.getText() + "' OR u_email = '" + eml.getText() + "'";
         ResultSet resultSet = dbc.getData(query);
         
         boolean duplicate = false; // Flag to track duplicates
         
         while (resultSet.next()) { // Loop through results (if any)
-            eml = resultSet.getString("u_email");
+            email = resultSet.getString("u_email");
             usrname = resultSet.getString("u_username");
             
-            if (eml.equals(email.getText())) {
+            if (email.equals(eml.getText())) {
                 JOptionPane.showMessageDialog(null, "Email already used!");
-                email.setText("");
+                eml.setText("");
                 duplicate = true;
             }
             
@@ -56,6 +58,36 @@ public class createUserForm extends javax.swing.JFrame {
         System.out.println("SQL Error: " + ex);
         return true; // Assume duplicate to avoid inserting problematic data
     }
+}
+    
+     public boolean updateCheck() {
+    dbConnectors dbc = new dbConnectors();
+    
+    String query = "SELECT u_email, u_username FROM tbl_users WHERE (u_username = '"+uname.getText()+"' OR u_email = '"+eml.getText()+"') AND u_id != '"+uid.getText()+"'";
+
+    try {
+        
+        ResultSet resultSet = dbc.getData(query);
+
+        while (resultSet.next()) {
+            String existingEmail = resultSet.getString("u_email");
+            String existingUsername = resultSet.getString("u_username");
+
+            if (existingEmail.equals(eml.getText())) {
+                JOptionPane.showMessageDialog(null, "Email is Already Used!");
+                eml.setText("");
+                return true;
+            }
+            if (existingUsername.equals(uname.getText())) {
+                JOptionPane.showMessageDialog(null, "Username is Already Taken!");
+                uname.setText("");
+                return true;
+            }
+        }
+    } catch (SQLException ex) {
+        ex.printStackTrace(); // Print errors for debugging
+    }
+    return false;
 }
 
     /**
@@ -75,22 +107,21 @@ public class createUserForm extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        email = new javax.swing.JTextField();
+        eml = new javax.swing.JTextField();
         jLabel5 = new javax.swing.JLabel();
         ps = new javax.swing.JPasswordField();
         jLabel6 = new javax.swing.JLabel();
         role = new javax.swing.JComboBox<>();
         jLabel7 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
         us = new javax.swing.JComboBox<>();
         jLabel8 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
-        fname1 = new javax.swing.JTextField();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
-        jButton6 = new javax.swing.JButton();
-        jButton7 = new javax.swing.JButton();
+        uid = new javax.swing.JTextField();
+        addb = new javax.swing.JButton();
+        upb = new javax.swing.JButton();
+        delb = new javax.swing.JButton();
+        ref = new javax.swing.JButton();
+        canb = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -126,11 +157,11 @@ public class createUserForm extends javax.swing.JFrame {
         jLabel3.setText("Last Name:");
         jPanel2.add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 160, -1, 20));
 
-        jLabel4.setText("User Status:");
-        jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 390, -1, -1));
+        jLabel4.setText("Role");
+        jPanel2.add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 400, -1, -1));
 
-        email.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        jPanel2.add(email, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 260, 230, 30));
+        eml.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        jPanel2.add(eml, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 260, 230, 30));
 
         jLabel5.setText("Email:");
         jPanel2.add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 230, -1, 20));
@@ -147,82 +178,118 @@ public class createUserForm extends javax.swing.JFrame {
                 roleActionPerformed(evt);
             }
         });
-        jPanel2.add(role, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 420, 230, 30));
+        jPanel2.add(role, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 350, 230, 30));
 
         jLabel7.setText("Password:");
         jPanel2.add(jLabel7, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 390, -1, -1));
 
-        jButton2.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jButton2.setText("Clear");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        us.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "User" }));
+        us.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                usActionPerformed(evt);
             }
         });
-        jPanel2.add(jButton2, new org.netbeans.lib.awtextra.AbsoluteConstraints(570, 120, 100, 50));
+        jPanel2.add(us, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 420, 230, 30));
 
-        us.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Admin", "User" }));
-        jPanel2.add(us, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 340, 230, 30));
-
-        jLabel8.setText("Role:");
-        jPanel2.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 310, -1, -1));
+        jLabel8.setText("User Status");
+        jPanel2.add(jLabel8, new org.netbeans.lib.awtextra.AbsoluteConstraints(340, 330, -1, -1));
 
         jLabel9.setText("User ID:");
         jPanel2.add(jLabel9, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 20, -1, -1));
 
-        fname1.setHorizontalAlignment(javax.swing.JTextField.CENTER);
-        fname1.addActionListener(new java.awt.event.ActionListener() {
+        uid.setHorizontalAlignment(javax.swing.JTextField.CENTER);
+        uid.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                fname1ActionPerformed(evt);
+                uidActionPerformed(evt);
             }
         });
-        jPanel2.add(fname1, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 50, 230, 30));
+        jPanel2.add(uid, new org.netbeans.lib.awtextra.AbsoluteConstraints(40, 50, 230, 30));
 
-        jButton3.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jButton3.setText("Add");
-        jButton3.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton3ActionPerformed(evt);
+        addb.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        addb.setText("Add");
+        addb.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                addbMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                addbMouseExited(evt);
             }
         });
-        jPanel2.add(jButton3, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 50, 100, 50));
+        addb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addbActionPerformed(evt);
+            }
+        });
+        jPanel2.add(addb, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 50, 100, 50));
 
-        jButton4.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jButton4.setText("Update");
-        jButton4.setEnabled(false);
-        jButton4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton4ActionPerformed(evt);
+        upb.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        upb.setText("Update");
+        upb.setEnabled(false);
+        upb.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                upbMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                upbMouseExited(evt);
             }
         });
-        jPanel2.add(jButton4, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 120, 100, 50));
+        upb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                upbActionPerformed(evt);
+            }
+        });
+        jPanel2.add(upb, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 50, 100, 50));
 
-        jButton5.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jButton5.setText("Delete");
-        jButton5.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton5ActionPerformed(evt);
+        delb.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        delb.setText("Delete");
+        delb.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                delbMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                delbMouseExited(evt);
             }
         });
-        jPanel2.add(jButton5, new org.netbeans.lib.awtextra.AbsoluteConstraints(400, 190, 100, 50));
+        delb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                delbActionPerformed(evt);
+            }
+        });
+        jPanel2.add(delb, new org.netbeans.lib.awtextra.AbsoluteConstraints(380, 120, 100, 50));
 
-        jButton6.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jButton6.setText("Refresh");
-        jButton6.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton6ActionPerformed(evt);
+        ref.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        ref.setText("Refresh");
+        ref.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                refMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                refMouseExited(evt);
             }
         });
-        jPanel2.add(jButton6, new org.netbeans.lib.awtextra.AbsoluteConstraints(570, 50, 100, 50));
+        ref.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refActionPerformed(evt);
+            }
+        });
+        jPanel2.add(ref, new org.netbeans.lib.awtextra.AbsoluteConstraints(640, 50, 100, 50));
 
-        jButton7.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jButton7.setText("Cancel");
-        jButton7.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton7ActionPerformed(evt);
+        canb.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        canb.setText("Cancel");
+        canb.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                canbMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                canbMouseExited(evt);
             }
         });
-        jPanel2.add(jButton7, new org.netbeans.lib.awtextra.AbsoluteConstraints(570, 190, 100, 50));
+        canb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                canbActionPerformed(evt);
+            }
+        });
+        jPanel2.add(canb, new org.netbeans.lib.awtextra.AbsoluteConstraints(510, 120, 100, 50));
 
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 0, 830, 480));
 
@@ -257,17 +324,13 @@ public class createUserForm extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_roleActionPerformed
 
-    private void fname1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fname1ActionPerformed
+    private void uidActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_uidActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_fname1ActionPerformed
+    }//GEN-LAST:event_uidActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-
-    }//GEN-LAST:event_jButton2ActionPerformed
-
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void addbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addbActionPerformed
         
-        if(fname.getText().isEmpty()||lname.getText().isEmpty()||email.getText().isEmpty()||uname.getText().isEmpty()||ps.getText().isEmpty()){
+        if(fname.getText().isEmpty()||lname.getText().isEmpty()||eml.getText().isEmpty()||uname.getText().isEmpty()||ps.getText().isEmpty()){
             JOptionPane.showMessageDialog(null, "All Feilds are required!");
             return;
         }
@@ -284,7 +347,7 @@ public class createUserForm extends javax.swing.JFrame {
         }
         dbConnectors dbc = new dbConnectors();
         if (dbc.insertData("INSERT INTO tbl_users (u_fname, u_lname, u_email, u_username, u_password, u_role, u_status) "
-            + "VALUES ('" + fname.getText() + "','" + lname.getText() + "','" + email.getText() + "','"
+            + "VALUES ('" + fname.getText() + "','" + lname.getText() + "','" + eml.getText() + "','"
             + uname.getText() + "','" + ps.getText() + "','" + role.getSelectedItem()+ "','"+us.getSelectedItem()+ ")"))
 
         JOptionPane.showMessageDialog(null, "Inserted Successfully!");
@@ -292,24 +355,71 @@ public class createUserForm extends javax.swing.JFrame {
         udb.setVisible(true);
         this.dispose();
 
-    }//GEN-LAST:event_jButton3ActionPerformed
+    }//GEN-LAST:event_addbActionPerformed
 
-    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+    private void upbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upbActionPerformed
+            
+    }//GEN-LAST:event_upbActionPerformed
+
+    private void delbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_delbActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton4ActionPerformed
+    }//GEN-LAST:event_delbActionPerformed
 
-    private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
+    private void refActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refActionPerformed
+        // TODO add your. handling code here:
+    }//GEN-LAST:event_refActionPerformed
+
+    private void canbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_canbActionPerformed
+        usersforms uf = new usersforms();
+        uf.setVisible(true);
+        this.dispose();
+    }//GEN-LAST:event_canbActionPerformed
+
+    private void usActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_usActionPerformed
         // TODO add your handling code here:
-    }//GEN-LAST:event_jButton5ActionPerformed
+    }//GEN-LAST:event_usActionPerformed
 
-    private void jButton6ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton6ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton6ActionPerformed
+    private void addbMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addbMouseExited
+    addb.setBackground(new java.awt.Color(223,120,141));
+    }//GEN-LAST:event_addbMouseExited
 
-    private void jButton7ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton7ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton7ActionPerformed
+    private void addbMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_addbMouseEntered
+     addb.setBackground(new java.awt.Color(205, 13, 50));
+    }//GEN-LAST:event_addbMouseEntered
 
+    private void refMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_refMouseEntered
+         ref.setBackground(new java.awt.Color(205, 13, 50));
+    }//GEN-LAST:event_refMouseEntered
+
+    private void refMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_refMouseExited
+        ref.setBackground(new java.awt.Color(223,120,141));
+    }//GEN-LAST:event_refMouseExited
+
+    private void upbMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_upbMouseEntered
+        upb.setBackground(new java.awt.Color(205, 13, 50));
+    }//GEN-LAST:event_upbMouseEntered
+
+    private void upbMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_upbMouseExited
+        upb.setBackground(new java.awt.Color(223,120,141));
+    }//GEN-LAST:event_upbMouseExited
+
+    private void delbMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_delbMouseEntered
+        delb.setBackground(new java.awt.Color(205, 13, 50));
+    }//GEN-LAST:event_delbMouseEntered
+
+    private void delbMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_delbMouseExited
+        delb.setBackground(new java.awt.Color(223,120,141));
+    }//GEN-LAST:event_delbMouseExited
+
+    private void canbMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_canbMouseEntered
+       canb.setBackground(new java.awt.Color(205, 13, 50));
+    }//GEN-LAST:event_canbMouseEntered
+
+    private void canbMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_canbMouseExited
+        canb.setBackground(new java.awt.Color(223,120,141));
+    }//GEN-LAST:event_canbMouseExited
+
+        
     /**
      * @param args the command line arguments
      */
@@ -346,15 +456,11 @@ public class createUserForm extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.JTextField email;
+    public javax.swing.JButton addb;
+    public javax.swing.JButton canb;
+    public javax.swing.JButton delb;
+    public javax.swing.JTextField eml;
     public javax.swing.JTextField fname;
-    public javax.swing.JTextField fname1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JButton jButton6;
-    private javax.swing.JButton jButton7;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -367,8 +473,11 @@ public class createUserForm extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     public javax.swing.JTextField lname;
     public javax.swing.JPasswordField ps;
+    public javax.swing.JButton ref;
     public javax.swing.JComboBox<String> role;
+    public javax.swing.JTextField uid;
     public javax.swing.JTextField uname;
-    private javax.swing.JComboBox<String> us;
+    public javax.swing.JButton upb;
+    public javax.swing.JComboBox<String> us;
     // End of variables declaration//GEN-END:variables
 }
